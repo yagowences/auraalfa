@@ -5,6 +5,9 @@ import {
   moverTodosProximaSemana,
   selecionarItens,
 } from "./actions";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 type ItemRow = { id: string; titulo: string };
 type RolloverCandidato = { item_id: string; itens: ItemRow };
@@ -93,7 +96,7 @@ export default async function SemanaPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl space-y-10 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-10 px-6 py-10">
       <h1 className="text-2xl font-semibold">Ritual da semana</h1>
 
       <section>
@@ -106,7 +109,7 @@ export default async function SemanaPage() {
         {pendentesRollover.length === 0 ? (
           <p className="text-muted-foreground text-sm">Tudo decidido.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {pendentesRollover.map((c) => (
               <div
                 key={c.item_id}
@@ -122,12 +125,9 @@ export default async function SemanaPage() {
                       "proxima_semana",
                     )}
                   >
-                    <button
-                      type="submit"
-                      className="border-border rounded-md border px-2 py-1 text-xs"
-                    >
+                    <Button type="submit" variant="outline" size="sm">
                       → Próxima semana
-                    </button>
+                    </Button>
                   </form>
                   <form
                     action={decidirRollover.bind(
@@ -137,12 +137,14 @@ export default async function SemanaPage() {
                       "descartado",
                     )}
                   >
-                    <button
+                    <Button
                       type="submit"
-                      className="text-muted-foreground hover:text-destructive rounded-md border border-transparent px-2 py-1 text-xs"
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive"
                     >
                       ✕ Descartar
-                    </button>
+                    </Button>
                   </form>
                 </div>
               </div>
@@ -154,12 +156,14 @@ export default async function SemanaPage() {
                 semanaAnterior,
               )}
             >
-              <button
+              <Button
                 type="submit"
-                className="text-muted-foreground hover:text-foreground text-xs underline"
+                variant="link"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground h-auto p-0"
               >
                 Mover todos p/ semana
-              </button>
+              </Button>
             </form>
           </div>
         )}
@@ -179,24 +183,22 @@ export default async function SemanaPage() {
             Nenhum item aberto de entregável confirmado.
           </p>
         ) : (
-          <form action={selecionarItens} className="space-y-2">
+          <form action={selecionarItens} className="flex flex-col gap-2">
             <input type="hidden" name="semana_referencia" value={semanaAtual} />
             {elegiveisSelecao.map((item) => (
-              <label
+              <div
                 key={item.id}
                 className="border-border flex items-center gap-2 rounded-md border px-4 py-2 text-sm"
               >
-                <input type="checkbox" name="item_id" value={item.id} />
-                {item.titulo}
-              </label>
+                <Checkbox id={`item-${item.id}`} name="item_id" value={item.id} />
+                <Label htmlFor={`item-${item.id}`} className="font-normal">
+                  {item.titulo}
+                </Label>
+              </div>
             ))}
-            <button
-              type="submit"
-              disabled={!bloco1Vazio}
-              className="bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50"
-            >
+            <Button type="submit" disabled={!bloco1Vazio} className="w-fit">
               Adicionar à semana
-            </button>
+            </Button>
           </form>
         )}
       </section>
@@ -208,7 +210,7 @@ export default async function SemanaPage() {
         {habitos.length === 0 ? (
           <p className="text-muted-foreground text-sm">Nenhum hábito cadastrado.</p>
         ) : (
-          <ul className="space-y-1 text-sm">
+          <ul className="flex flex-col gap-1 text-sm">
             {habitos.map((h) => (
               <li key={h.id} className="font-mono">
                 {h.nome}: {logsPorHabito.get(h.id) ?? 0}/{h.meta_semanal}

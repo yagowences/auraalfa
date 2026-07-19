@@ -2,6 +2,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Meta } from "@/lib/types";
 import { createMeta, toggleMetaAtiva, deleteMeta } from "./actions";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export default async function MetasPage() {
   const supabase = await createClient();
@@ -16,56 +20,41 @@ export default async function MetasPage() {
     <main className="mx-auto max-w-2xl px-6 py-10">
       <h1 className="mb-6 text-2xl font-semibold">Ano / Metas</h1>
 
-      <form action={createMeta} className="mb-10 space-y-3">
-        <input
-          type="text"
-          name="titulo"
-          required
-          placeholder="Título da meta"
-          className="border-input w-full rounded-md border bg-transparent px-3 py-2 text-sm"
-        />
-        <textarea
-          name="descricao"
-          placeholder="Descrição (opcional)"
-          rows={2}
-          className="border-input w-full rounded-md border bg-transparent px-3 py-2 text-sm"
-        />
+      <form action={createMeta} className="mb-10 flex flex-col gap-3">
+        <Input type="text" name="titulo" required placeholder="Título da meta" />
+        <Textarea name="descricao" placeholder="Descrição (opcional)" rows={2} />
         <div className="flex items-center gap-3">
-          <label className="text-muted-foreground text-sm">
+          <Label htmlFor="data_alvo" className="text-muted-foreground">
             Data alvo
-            <input
-              type="date"
-              name="data_alvo"
-              className="border-input ml-2 rounded-md border bg-transparent px-2 py-1 text-sm"
-            />
-          </label>
-          <button
-            type="submit"
-            className="bg-primary text-primary-foreground ml-auto rounded-md px-3 py-2 text-sm font-medium"
-          >
+          </Label>
+          <Input id="data_alvo" type="date" name="data_alvo" className="w-auto" />
+          <Button type="submit" className="ml-auto">
             Criar meta
-          </button>
+          </Button>
         </div>
       </form>
 
-      <ul className="space-y-2">
+      <ul className="flex flex-col gap-2">
         {metas?.map((meta) => (
           <li
             key={meta.id}
             className="border-border flex items-center gap-3 rounded-md border px-4 py-3"
           >
-            <form
-              action={toggleMetaAtiva.bind(null, meta.id, !meta.ativa)}
-            >
-              <button
+            <form action={toggleMetaAtiva.bind(null, meta.id, !meta.ativa)}>
+              <Button
                 type="submit"
+                variant="ghost"
+                size="icon-xs"
                 title={meta.ativa ? "Marcar como inativa" : "Marcar como ativa"}
-                className={
-                  meta.ativa
-                    ? "h-2.5 w-2.5 rounded-full bg-primary"
-                    : "h-2.5 w-2.5 rounded-full border border-muted-foreground"
-                }
-              />
+              >
+                <span
+                  className={
+                    meta.ativa
+                      ? "size-2.5 rounded-full bg-primary"
+                      : "size-2.5 rounded-full border border-muted-foreground"
+                  }
+                />
+              </Button>
             </form>
             <Link href={`/metas/${meta.id}`} className="flex-1">
               <p className="text-sm font-medium">{meta.titulo}</p>
@@ -76,12 +65,14 @@ export default async function MetasPage() {
               )}
             </Link>
             <form action={deleteMeta.bind(null, meta.id)}>
-              <button
+              <Button
                 type="submit"
-                className="text-muted-foreground hover:text-destructive text-xs"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-destructive"
               >
                 Excluir
-              </button>
+              </Button>
             </form>
           </li>
         ))}

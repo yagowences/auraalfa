@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { requestPasswordReset } from "./actions";
 import { idleAuthState } from "@/lib/auth-form-state";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function EsqueciSenhaPage() {
   const [state, formAction, pending] = useActionState(
@@ -13,8 +15,8 @@ export default function EsqueciSenhaPage() {
 
   return (
     <main className="flex min-h-svh items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-1">
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold">Redefinir senha</h1>
           <p className="text-muted-foreground text-sm">
             Enviamos um link para você escolher uma nova senha.
@@ -24,21 +26,17 @@ export default function EsqueciSenhaPage() {
         {state.status === "success" ? (
           <p className="text-sm">{state.message}</p>
         ) : (
-          <form action={formAction} className="space-y-3">
-            <input
+          <form action={formAction} className="flex flex-col gap-3">
+            <Input
               type="email"
               name="email"
               required
               placeholder="voce@exemplo.com"
-              className="border-input w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="E-mail"
             />
-            <button
-              type="submit"
-              disabled={pending}
-              className="bg-primary text-primary-foreground w-full rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50"
-            >
+            <Button type="submit" disabled={pending} className="w-full">
               {pending ? "Enviando…" : "Enviar link"}
-            </button>
+            </Button>
             {state.status === "error" && (
               <p className="text-destructive text-sm">{state.message}</p>
             )}

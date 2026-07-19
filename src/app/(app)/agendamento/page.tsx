@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 type Proposta = { itemId: string; data: string; horaInicio: string; horaFim: string; titulo: string };
 type ItemNaoCoube = { id: string; titulo: string };
@@ -63,18 +66,13 @@ export default function AgendamentoPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10">
       <h1 className="text-2xl font-semibold">Sugerir agenda da semana</h1>
 
       {!resultado && (
-        <button
-          type="button"
-          onClick={sugerir}
-          disabled={carregando}
-          className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
+        <Button type="button" onClick={sugerir} disabled={carregando} className="w-fit">
           {carregando ? "Calculando…" : "Sugerir agenda"}
-        </button>
+        </Button>
       )}
 
       {erro && <p className="text-destructive text-sm">{erro}</p>}
@@ -88,21 +86,23 @@ export default function AgendamentoPage() {
             {resultado.propostas.length === 0 ? (
               <p className="text-muted-foreground text-sm">Nada pra sugerir.</p>
             ) : (
-              <ul className="space-y-2">
+              <ul className="flex flex-col gap-2">
                 {resultado.propostas.map((p, i) => (
                   <li
                     key={`${p.itemId}-${i}`}
                     className="border-border flex items-center gap-3 rounded-md border px-4 py-2 text-sm"
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
+                      id={`proposta-${i}`}
                       checked={selecionados.has(i)}
-                      onChange={() => toggle(i)}
+                      onCheckedChange={() => toggle(i)}
                     />
                     <span className="text-muted-foreground font-mono text-xs">
                       {p.data} {p.horaInicio}–{p.horaFim}
                     </span>
-                    <span>{p.titulo}</span>
+                    <Label htmlFor={`proposta-${i}`} className="font-normal">
+                      {p.titulo}
+                    </Label>
                   </li>
                 ))}
               </ul>
@@ -112,7 +112,7 @@ export default function AgendamentoPage() {
           {resultado.itensNaoCoubem.length > 0 && (
             <section>
               <h2 className="mb-3 text-sm font-medium">Não coube na semana</h2>
-              <ul className="space-y-1">
+              <ul className="flex flex-col gap-1">
                 {resultado.itensNaoCoubem.map((item) => (
                   <li key={item.id} className="text-muted-foreground text-sm">
                     {item.titulo}
@@ -123,22 +123,16 @@ export default function AgendamentoPage() {
           )}
 
           <div className="flex gap-3">
-            <button
+            <Button
               type="button"
               onClick={confirmar}
               disabled={confirmando || selecionados.size === 0}
-              className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
               {confirmando ? "Confirmando…" : "Confirmar agenda"}
-            </button>
-            <button
-              type="button"
-              onClick={sugerir}
-              disabled={carregando}
-              className="border-border rounded-md border px-4 py-2 text-sm"
-            >
+            </Button>
+            <Button type="button" variant="outline" onClick={sugerir} disabled={carregando}>
               Recalcular
-            </button>
+            </Button>
           </div>
         </>
       )}

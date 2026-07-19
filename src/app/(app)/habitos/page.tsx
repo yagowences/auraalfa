@@ -5,6 +5,15 @@ import {
   createCompromisso,
   deleteCompromisso,
 } from "./actions";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Habito = { id: string; nome: string; meta_semanal: number; ativo: boolean };
 type CompromissoFixo = {
@@ -63,25 +72,27 @@ export default async function HabitosPage() {
   const logsSet = new Set((logs ?? []).map((l) => `${l.habito_id}:${l.data}`));
 
   return (
-    <main className="mx-auto max-w-2xl space-y-10 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-10 px-6 py-10">
       <h1 className="text-2xl font-semibold">Hábitos</h1>
 
       <section>
-        <ul className="mb-4 space-y-2">
+        <ul className="mb-4 flex flex-col gap-2">
           {habitos.map((h) => (
             <li key={h.id} className="border-border rounded-md border px-4 py-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{h.nome}</span>
                 <form action={toggleHabitoAtivo.bind(null, h.id, !h.ativo)}>
-                  <button
+                  <Button
                     type="submit"
-                    className="text-muted-foreground text-xs underline"
+                    variant="link"
+                    size="sm"
+                    className="text-muted-foreground h-auto p-0"
                   >
                     {h.ativo ? "Desativar" : "Reativar"}
-                  </button>
+                  </Button>
                 </form>
               </div>
-              <div className="mt-2 flex gap-1">
+              <div className="mt-2 flex items-center gap-1">
                 {dias.map((dia) => {
                   const feito = logsSet.has(`${h.id}:${dia}`);
                   return (
@@ -90,8 +101,8 @@ export default async function HabitosPage() {
                       title={dia}
                       className={
                         feito
-                          ? "bg-success h-3 w-3 rounded-sm"
-                          : "bg-muted h-3 w-3 rounded-sm"
+                          ? "bg-success size-3 rounded-sm"
+                          : "bg-muted size-3 rounded-sm"
                       }
                     />
                   );
@@ -108,30 +119,31 @@ export default async function HabitosPage() {
         </ul>
 
         <form action={createHabito} className="flex gap-2">
-          <input
+          <Input
             type="text"
             name="nome"
             required
             placeholder="Novo hábito"
-            className="border-input flex-1 rounded-md border bg-transparent px-3 py-2 text-sm"
+            className="flex-1"
           />
-          <input
+          <Input
             type="number"
             name="meta_semanal"
             min={1}
             max={7}
             defaultValue={7}
-            className="border-input w-20 rounded-md border bg-transparent px-2 py-2 text-sm"
+            aria-label="Meta semanal"
+            className="w-20"
           />
-          <button type="submit" className="border-border rounded-md border px-3 py-2 text-sm">
+          <Button type="submit" variant="outline">
             Criar
-          </button>
+          </Button>
         </form>
       </section>
 
       <section>
         <h2 className="mb-3 text-sm font-medium">Compromissos fixos</h2>
-        <ul className="mb-4 space-y-2">
+        <ul className="mb-4 flex flex-col gap-2">
           {compromissos.map((c) => (
             <li
               key={c.id}
@@ -142,12 +154,14 @@ export default async function HabitosPage() {
                 {c.hora_fim.slice(0, 5)} — {c.titulo}
               </span>
               <form action={deleteCompromisso.bind(null, c.id)}>
-                <button
+                <Button
                   type="submit"
-                  className="text-muted-foreground hover:text-destructive text-xs"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
                 >
                   Excluir
-                </button>
+                </Button>
               </form>
             </li>
           ))}
@@ -157,38 +171,42 @@ export default async function HabitosPage() {
         </ul>
 
         <form action={createCompromisso} className="flex flex-wrap gap-2">
-          <select
-            name="dia_semana"
-            className="border-input rounded-md border bg-transparent px-2 py-2 text-sm"
-          >
-            {DIAS.map((d, i) => (
-              <option key={d} value={i}>
-                {d}
-              </option>
-            ))}
-          </select>
-          <input
+          <Select name="dia_semana" defaultValue="1">
+            <SelectTrigger aria-label="Dia da semana">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DIAS.map((d, i) => (
+                <SelectItem key={d} value={String(i)}>
+                  {d}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
             type="time"
             name="hora_inicio"
             required
-            className="border-input rounded-md border bg-transparent px-2 py-2 text-sm"
+            aria-label="Hora de início"
+            className="w-auto"
           />
-          <input
+          <Input
             type="time"
             name="hora_fim"
             required
-            className="border-input rounded-md border bg-transparent px-2 py-2 text-sm"
+            aria-label="Hora de fim"
+            className="w-auto"
           />
-          <input
+          <Input
             type="text"
             name="titulo"
             required
             placeholder="Título"
-            className="border-input flex-1 rounded-md border bg-transparent px-3 py-2 text-sm"
+            className="flex-1"
           />
-          <button type="submit" className="border-border rounded-md border px-3 py-2 text-sm">
+          <Button type="submit" variant="outline">
             Criar
-          </button>
+          </Button>
         </form>
       </section>
     </main>

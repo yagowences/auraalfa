@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { weekStart, monthStart } from "@/lib/dates";
 import { toggleItemStatus, agendarParaHoje, toggleHabitoHoje } from "./actions";
+import { Button } from "@/components/ui/button";
 
 type CompromissoFixo = {
   id: string;
@@ -100,7 +101,7 @@ export default async function Home() {
     (checkpointsResult.data?.length ?? 0) > 0;
 
   return (
-    <main className="mx-auto max-w-2xl space-y-8 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-10">
       {rolloverPendentes > 0 && (
         <Link
           href="/semana"
@@ -126,7 +127,7 @@ export default async function Home() {
             Sugerir agenda
           </Link>
         </div>
-        <ul className="space-y-2">
+        <ul className="flex flex-col gap-2">
           {compromissos.map((c) => (
             <li key={c.id} className="text-muted-foreground flex gap-3 text-sm">
               <span className="font-mono text-xs">
@@ -138,9 +139,11 @@ export default async function Home() {
           {agendadosHoje.map((b, i) => (
             <li key={`${b.item_id}-${i}`} className="flex items-center gap-3 text-sm">
               <form action={toggleItemStatus.bind(null, b.itens.id, true)}>
-                <button
+                <Button
                   type="submit"
-                  className="border-muted-foreground h-4 w-4 rounded-full border"
+                  variant="outline"
+                  size="icon-xs"
+                  className="rounded-full"
                   aria-label="Concluir"
                 />
               </form>
@@ -162,7 +165,7 @@ export default async function Home() {
       {semData.length > 0 && (
         <section>
           <h2 className="mb-3 text-sm font-medium">Sem data (dessa semana)</h2>
-          <ul className="space-y-2">
+          <ul className="flex flex-col gap-2">
             {semData.map((s) => (
               <li
                 key={s.item_id}
@@ -170,18 +173,25 @@ export default async function Home() {
               >
                 <div className="flex items-center gap-3">
                   <form action={toggleItemStatus.bind(null, s.itens.id, true)}>
-                    <button
+                    <Button
                       type="submit"
-                      className="border-muted-foreground h-4 w-4 rounded-full border"
+                      variant="outline"
+                      size="icon-xs"
+                      className="rounded-full"
                       aria-label="Concluir"
                     />
                   </form>
                   <span>{s.itens.titulo}</span>
                 </div>
                 <form action={agendarParaHoje.bind(null, s.item_id, semanaAtual)}>
-                  <button type="submit" className="text-muted-foreground text-xs underline">
+                  <Button
+                    type="submit"
+                    variant="link"
+                    size="sm"
+                    className="text-muted-foreground h-auto p-0"
+                  >
                     Agendar pra hoje
-                  </button>
+                  </Button>
                 </form>
               </li>
             ))}
@@ -205,16 +215,18 @@ export default async function Home() {
               const feito = feitosHojeIds.has(h.id);
               return (
                 <form key={h.id} action={toggleHabitoHoje.bind(null, h.id, feito)}>
-                  <button
+                  <Button
                     type="submit"
+                    variant={feito ? "default" : "outline"}
+                    size="sm"
                     className={
                       feito
-                        ? "bg-success text-success-foreground rounded-full px-3 py-1 text-xs"
-                        : "border-border rounded-full border px-3 py-1 text-xs"
+                        ? "rounded-full bg-success text-success-foreground hover:bg-success/80"
+                        : "rounded-full"
                     }
                   >
                     {h.nome}
-                  </button>
+                  </Button>
                 </form>
               );
             })}

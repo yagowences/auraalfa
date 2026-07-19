@@ -2,6 +2,16 @@ import { createClient } from "@/lib/supabase/server";
 import { monthStart } from "@/lib/dates";
 import type { Meta, Checkpoint, ProgressoEntregavel } from "@/lib/types";
 import { confirmEntregavel, createEntregavel, createItens } from "./actions";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Item = { id: string; entregavel_id: string; titulo: string; status: string };
 
@@ -53,7 +63,7 @@ export default async function MesPage() {
   const itens = itensData ?? [];
 
   return (
-    <main className="mx-auto max-w-2xl space-y-10 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-10 px-6 py-10">
       <h1 className="text-2xl font-semibold">Ritual do mês</h1>
 
       {checkpoints.length > 0 && (
@@ -61,7 +71,7 @@ export default async function MesPage() {
           <h2 className="text-signature-foreground text-sm font-medium">
             Checkpoint deste mês
           </h2>
-          <ul className="mt-1 space-y-1 text-sm">
+          <ul className="mt-1 flex flex-col gap-1 text-sm">
             {checkpoints.map((cp) => (
               <li key={cp.id}>{cp.descricao ?? "Replanejamento previsto"}</li>
             ))}
@@ -78,7 +88,7 @@ export default async function MesPage() {
             Nenhum entregável no mês anterior.
           </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="flex flex-col gap-2">
             {progressoAnterior.map((p) => (
               <li
                 key={p.entregavel_id}
@@ -97,19 +107,16 @@ export default async function MesPage() {
       <section>
         <h2 className="mb-3 text-sm font-medium">Entregáveis deste mês</h2>
 
-        <ul className="mb-4 space-y-3">
+        <ul className="mb-4 flex flex-col gap-3">
           {progressoAtual.map((p) => (
             <li key={p.entregavel_id} className="border-border rounded-md border px-4 py-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{p.titulo}</span>
                 {p.estado === "planejado" ? (
                   <form action={confirmEntregavel.bind(null, p.entregavel_id)}>
-                    <button
-                      type="submit"
-                      className="bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs"
-                    >
+                    <Button type="submit" size="sm">
                       Confirmar
-                    </button>
+                    </Button>
                   </form>
                 ) : (
                   <span className="text-muted-foreground font-mono text-xs">
@@ -119,7 +126,7 @@ export default async function MesPage() {
               </div>
 
               {p.estado !== "planejado" && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 flex flex-col gap-2">
                   {itens
                     .filter((i) => i.entregavel_id === p.entregavel_id)
                     .map((i) => (
@@ -129,18 +136,15 @@ export default async function MesPage() {
                     ))}
                   <form action={createItens} className="flex gap-2">
                     <input type="hidden" name="entregavel_id" value={p.entregavel_id} />
-                    <textarea
+                    <Textarea
                       name="titulos"
                       rows={2}
-                      placeholder={"Um item por linha — cole vários de uma vez"}
-                      className="border-input flex-1 rounded-md border bg-transparent px-2 py-1 text-xs"
+                      placeholder="Um item por linha — cole vários de uma vez"
+                      className="flex-1 text-xs"
                     />
-                    <button
-                      type="submit"
-                      className="border-border self-start rounded-md border px-2 py-1 text-xs"
-                    >
+                    <Button type="submit" variant="outline" size="sm" className="self-start">
                       Adicionar
-                    </button>
+                    </Button>
                   </form>
                 </div>
               )}
@@ -159,30 +163,28 @@ export default async function MesPage() {
           </p>
         ) : (
           <form action={createEntregavel} className="flex gap-2">
-            <select
-              name="meta_id"
-              required
-              className="border-input rounded-md border bg-transparent px-2 py-2 text-sm"
-            >
-              {metas.map((meta) => (
-                <option key={meta.id} value={meta.id}>
-                  {meta.titulo}
-                </option>
-              ))}
-            </select>
-            <input
+            <Select name="meta_id" defaultValue={metas[0].id}>
+              <SelectTrigger aria-label="Meta">
+                <SelectValue placeholder="Meta" />
+              </SelectTrigger>
+              <SelectContent>
+                {metas.map((meta) => (
+                  <SelectItem key={meta.id} value={meta.id}>
+                    {meta.titulo}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
               type="text"
               name="titulo"
               required
               placeholder="Novo entregável"
-              className="border-input flex-1 rounded-md border bg-transparent px-3 py-2 text-sm"
+              className="flex-1"
             />
-            <button
-              type="submit"
-              className="border-border rounded-md border px-3 py-2 text-sm"
-            >
+            <Button type="submit" variant="outline">
               Criar
-            </button>
+            </Button>
           </form>
         )}
       </section>

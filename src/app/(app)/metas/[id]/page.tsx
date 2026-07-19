@@ -7,6 +7,8 @@ import {
   createCheckpoint,
   deleteCheckpoint,
 } from "./actions";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default async function MetaDetailPage({
   params,
@@ -47,7 +49,7 @@ export default async function MetaDetailPage({
   const progresso = progressoResult.data ?? [];
 
   return (
-    <main className="mx-auto max-w-2xl space-y-10 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-10 px-6 py-10">
       <div>
         <h1 className="text-2xl font-semibold">{meta.titulo}</h1>
         {meta.descricao && (
@@ -69,7 +71,7 @@ export default async function MetaDetailPage({
             Nenhum entregável ainda — eles nascem no ritual do mês.
           </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="flex flex-col gap-2">
             {progresso.map((p) => (
               <li
                 key={p.entregavel_id}
@@ -87,7 +89,7 @@ export default async function MetaDetailPage({
 
       <section>
         <h2 className="mb-3 text-sm font-medium">Fases</h2>
-        <ul className="mb-3 space-y-2">
+        <ul className="mb-3 flex flex-col gap-2">
           {fases.map((fase) => (
             <li
               key={fase.id}
@@ -95,39 +97,35 @@ export default async function MetaDetailPage({
             >
               <span>{fase.nome}</span>
               <form action={deleteFase.bind(null, id, fase.id)}>
-                <button
+                <Button
                   type="submit"
-                  className="text-muted-foreground hover:text-destructive text-xs"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
                 >
                   Excluir
-                </button>
+                </Button>
               </form>
             </li>
           ))}
         </ul>
-        <form
-          action={createFase.bind(null, id)}
-          className="flex gap-2"
-        >
-          <input
+        <form action={createFase.bind(null, id)} className="flex gap-2">
+          <Input
             type="text"
             name="nome"
             required
             placeholder="Nome da fase"
-            className="border-input flex-1 rounded-md border bg-transparent px-3 py-2 text-sm"
+            className="flex-1"
           />
-          <button
-            type="submit"
-            className="border-border rounded-md border px-3 py-2 text-sm"
-          >
+          <Button type="submit" variant="outline">
             Adicionar
-          </button>
+          </Button>
         </form>
       </section>
 
       <section>
         <h2 className="mb-3 text-sm font-medium">Checkpoints</h2>
-        <ul className="mb-3 space-y-2">
+        <ul className="mb-3 flex flex-col gap-2">
           {checkpoints.map((cp) => (
             <li
               key={cp.id}
@@ -138,38 +136,35 @@ export default async function MetaDetailPage({
                 {cp.descricao ? ` — ${cp.descricao}` : ""}
               </span>
               <form action={deleteCheckpoint.bind(null, id, cp.id)}>
-                <button
+                <Button
                   type="submit"
-                  className="text-muted-foreground hover:text-destructive text-xs"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
                 >
                   Excluir
-                </button>
+                </Button>
               </form>
             </li>
           ))}
         </ul>
-        <form
-          action={createCheckpoint.bind(null, id)}
-          className="flex gap-2"
-        >
-          <input
+        <form action={createCheckpoint.bind(null, id)} className="flex gap-2">
+          <Input
             type="date"
             name="mes_gatilho"
             required
-            className="border-input rounded-md border bg-transparent px-3 py-2 text-sm"
+            aria-label="Mês do checkpoint"
+            className="w-auto"
           />
-          <input
+          <Input
             type="text"
             name="descricao"
             placeholder="Descrição (opcional)"
-            className="border-input flex-1 rounded-md border bg-transparent px-3 py-2 text-sm"
+            className="flex-1"
           />
-          <button
-            type="submit"
-            className="border-border rounded-md border px-3 py-2 text-sm"
-          >
+          <Button type="submit" variant="outline">
             Adicionar
-          </button>
+          </Button>
         </form>
       </section>
     </main>
