@@ -103,17 +103,33 @@ create table public.selecoes_semanais (
   id uuid primary key default gen_random_uuid(),
   item_id uuid not null references public.itens (id) on delete cascade,
   semana_referencia date not null,
-  data_agendada date,
-  hora_inicio time,
-  hora_fim time,
-  origem_bloco text not null default 'nao_agendado'
-    check (origem_bloco in ('nao_agendado', 'sugerido', 'fixado_manual')),
   created_at timestamptz not null default now(),
-  unique (item_id, semana_referencia),
-  check (hora_fim is null or hora_inicio is null or hora_fim > hora_inicio)
+  unique (item_id, semana_referencia)
 );
 create index selecoes_item_id_idx on public.selecoes_semanais (item_id);
 create index selecoes_semana_referencia_idx on public.selecoes_semanais (semana_referencia);
+
+-- Data/hora do agendamento vivem aqui, não em selecoes_semanais — um item
+-- divisível (Fase 2, motor de auto-agendamento) pode virar N blocos em
+-- dias diferentes, e selecoes_semanais é 1 linha por item por semana.
+-- hora_inicio/hora_fim ficam nullable: o motor sempre preenche as duas,
+-- mas o atalho manual "agendar pra hoje" (Fase 1, antes do motor existir)
+-- só define a data, sem hora específica.
+create table public.blocos_agendados (
+  id uuid primary key default gen_random_uuid(),
+  item_id uuid not null references public.itens (id) on delete cascade,
+  semana_referencia date not null,
+  data date not null,
+  hora_inicio time,
+  hora_fim time,
+  origem_bloco text not null
+    check (origem_bloco in ('sugerido', 'fixado_manual')),
+  created_at timestamptz not null default now(),
+  check (hora_fim is null or hora_inicio is null or hora_fim > hora_inicio)
+);
+create index blocos_agendados_item_id_idx on public.blocos_agendados (item_id);
+create index blocos_agendados_semana_referencia_idx on public.blocos_agendados (semana_referencia);
+create index blocos_agendados_data_idx on public.blocos_agendados (data);
 
 create table public.rollovers (
   id uuid primary key default gen_random_uuid(),
@@ -301,6 +317,13 @@ create policy itens_owner on public.itens
 alter table public.selecoes_semanais enable row level security;
 alter table public.selecoes_semanais force row level security;
 create policy selecoes_owner on public.selecoes_semanais
+  for all to authenticated
+  using ((select private.owns_item(item_id)))
+  with check ((select private.owns_item(item_id)));
+
+alter table public.blocos_agendados enable row level security;
+alter table public.blocos_agendados force row level security;
+create policy blocos_agendados_owner on public.blocos_agendados
   for all to authenticated
   using ((select private.owns_item(item_id)))
   with check ((select private.owns_item(item_id)));
