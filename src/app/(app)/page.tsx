@@ -9,10 +9,14 @@ type CompromissoFixo = {
   hora_inicio: string;
   hora_fim: string;
 };
-type SelecaoComItem = {
-  id: string;
-  data_agendada: string | null;
-  itens: { id: string; titulo: string; status: string };
+type ItemBasico = { id: string; titulo: string; status: string };
+type SelecaoComItem = { item_id: string; itens: ItemBasico };
+type BlocoComItem = {
+  item_id: string;
+  data: string;
+  hora_inicio: string | null;
+  hora_fim: string | null;
+  itens: ItemBasico;
 };
 type Habito = { id: string; nome: string };
 
@@ -27,6 +31,7 @@ export default async function Home() {
   const [
     compromissosResult,
     selecoesResult,
+    blocosResult,
     habitosResult,
     rolloverCandidatosResult,
     rolloverDecididosResult,
@@ -41,9 +46,14 @@ export default async function Home() {
       .returns<CompromissoFixo[]>(),
     supabase
       .from("selecoes_semanais")
-      .select("id,data_agendada,itens(id,titulo,status)")
+      .select("item_id, itens(id,titulo,status)")
       .eq("semana_referencia", semanaAtual)
       .returns<SelecaoComItem[]>(),
+    supabase
+      .from("blocos_agendados")
+      .select("item_id,data,hora_inicio,hora_fim,itens(id,titulo,status)")
+      .eq("semana_referencia", semanaAtual)
+      .returns<BlocoComItem[]>(),
     supabase.from("habitos").select("id,nome").eq("ativo", true).returns<Habito[]>(),
     supabase
       .from("selecoes_semanais")
@@ -61,8 +71,10 @@ export default async function Home() {
 
   const compromissos = compromissosResult.data ?? [];
   const selecoes = (selecoesResult.data ?? []).filter((s) => s.itens.status === "aberto");
-  const agendadosHoje = selecoes.filter((s) => s.data_agendada === hoje);
-  const semData = selecoes.filter((s) => s.data_agendada === null);
+  const blocos = (blocosResult.data ?? []).filter((b) => b.itens.status === "aberto");
+  const agendadosHoje = blocos.filter((b) => b.data === hoje);
+  const itemIdsComBloco = new Set(blocos.map((b) => b.item_id));
+  const semData = selecoes.filter((s) => !itemIdsComBloco.has(s.item_id));
 
   const habitos = habitosResult.data ?? [];
   const { data: logsHoje } = habitos.length
@@ -108,7 +120,12 @@ export default async function Home() {
       )}
 
       <section>
-        <h2 className="mb-3 text-sm font-medium">Agenda de hoje</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-medium">Agenda de hoje</h2>
+          <Link href="/agendamento" className="text-primary text-xs underline">
+            Sugerir agenda
+          </Link>
+        </div>
         <ul className="space-y-2">
           {compromissos.map((c) => (
             <li key={c.id} className="text-muted-foreground flex gap-3 text-sm">
@@ -118,16 +135,22 @@ export default async function Home() {
               <span>{c.titulo} (fixo)</span>
             </li>
           ))}
-          {agendadosHoje.map((s) => (
-            <li key={s.id} className="flex items-center gap-3 text-sm">
-              <form action={toggleItemStatus.bind(null, s.itens.id, true)}>
+          {agendadosHoje.map((b, i) => (
+            <li key={`${b.item_id}-${i}`} className="flex items-center gap-3 text-sm">
+              <form action={toggleItemStatus.bind(null, b.itens.id, true)}>
                 <button
                   type="submit"
                   className="border-muted-foreground h-4 w-4 rounded-full border"
                   aria-label="Concluir"
                 />
               </form>
-              <span>{s.itens.titulo}</span>
+              {b.hora_inicio && (
+                <span className="text-muted-foreground font-mono text-xs">
+                  {b.hora_inicio.slice(0, 5)}
+                  {b.hora_fim && `–${b.hora_fim.slice(0, 5)}`}
+                </span>
+              )}
+              <span>{b.itens.titulo}</span>
             </li>
           ))}
           {compromissos.length === 0 && agendadosHoje.length === 0 && (
@@ -142,7 +165,7 @@ export default async function Home() {
           <ul className="space-y-2">
             {semData.map((s) => (
               <li
-                key={s.id}
+                key={s.item_id}
                 className="border-border flex items-center justify-between rounded-md border px-4 py-2 text-sm"
               >
                 <div className="flex items-center gap-3">
@@ -155,7 +178,7 @@ export default async function Home() {
                   </form>
                   <span>{s.itens.titulo}</span>
                 </div>
-                <form action={agendarParaHoje.bind(null, s.id)}>
+                <form action={agendarParaHoje.bind(null, s.item_id, semanaAtual)}>
                   <button type="submit" className="text-muted-foreground text-xs underline">
                     Agendar pra hoje
                   </button>

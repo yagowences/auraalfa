@@ -24,15 +24,20 @@ export async function toggleItemStatus(itemId: string, concluido: boolean) {
   revalidatePath("/");
 }
 
-export async function agendarParaHoje(selecaoId: string) {
+export async function agendarParaHoje(itemId: string, semanaReferencia: string) {
   await requireUser();
 
   const hoje = new Date().toISOString().slice(0, 10);
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("selecoes_semanais")
-    .update({ data_agendada: hoje })
-    .eq("id", selecaoId);
+  // Atalho manual (sem hora — só data) até o motor da Fase 2 assumir esse
+  // botão. fixado_manual porque foi uma escolha explícita do usuário, não
+  // sugestão do motor — recálculos futuros não devem mexer nisso.
+  const { error } = await supabase.from("blocos_agendados").insert({
+    item_id: itemId,
+    semana_referencia: semanaReferencia,
+    data: hoje,
+    origem_bloco: "fixado_manual",
+  });
 
   if (error) throw new Error(error.message);
   revalidatePath("/");

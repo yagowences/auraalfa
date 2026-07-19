@@ -60,7 +60,6 @@ export async function selecionarItens(formData: FormData) {
     itemIds.map((itemId) => ({
       item_id: itemId,
       semana_referencia: semanaReferencia,
-      origem_bloco: "nao_agendado" as const,
     })),
   );
 

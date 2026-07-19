@@ -52,3 +52,16 @@ export type ProgressoEntregavel = {
   itens_concluidos: number;
   fracao_concluida: number;
 };
+
+export type OrigemBloco = "sugerido" | "fixado_manual";
+
+export type BlocoAgendadoDb = {
+  id: string;
+  item_id: string;
+  semana_referencia: string;
+  data: string;
+  hora_inicio: string | null;
+  hora_fim: string | null;
+  origem_bloco: OrigemBloco;
+  created_at: string;
+};
