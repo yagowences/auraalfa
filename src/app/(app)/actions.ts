@@ -1,0 +1,62 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/login");
+}
+
+export async function toggleItemStatus(itemId: string, concluido: boolean) {
+  await requireUser();
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("itens")
+    .update({ status: concluido ? "concluido" : "aberto" })
+    .eq("id", itemId);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+}
+
+export async function agendarParaHoje(selecaoId: string) {
+  await requireUser();
+
+  const hoje = new Date().toISOString().slice(0, 10);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("selecoes_semanais")
+    .update({ data_agendada: hoje })
+    .eq("id", selecaoId);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+}
+
+export async function toggleHabitoHoje(habitoId: string, jaFeitoHoje: boolean) {
+  await requireUser();
+
+  const hoje = new Date().toISOString().slice(0, 10);
+  const supabase = await createClient();
+
+  if (jaFeitoHoje) {
+    const { error } = await supabase
+      .from("logs_habitos")
+      .delete()
+      .eq("habito_id", habitoId)
+      .eq("data", hoje);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("logs_habitos")
+      .insert({ habito_id: habitoId, data: hoje, concluido: true });
+    if (error) throw new Error(error.message);
+  }
+
+  revalidatePath("/");
+}
